@@ -1,0 +1,8 @@
+streamlit
+python-docx
+comtypes ; Only required for Windows
+pywin32 ; Only required for Windows
+base64
+platform
+datetime
+subprocess
