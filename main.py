@@ -7,6 +7,7 @@ from docx.shared import Inches
 import platform
 import subprocess
 
+
 def replace_placeholders(doc, placeholders):
     """Replace placeholders in a Word document."""
     for para in doc.paragraphs:
@@ -21,6 +22,7 @@ def replace_placeholders(doc, placeholders):
                         cell.text = cell.text.replace(key, value)
     return doc
 
+
 def convert_to_pdf(doc_path, pdf_path):
     """Convert a Word document to PDF."""
     if platform.system() == "Windows":
@@ -34,17 +36,20 @@ def convert_to_pdf(doc_path, pdf_path):
         doc.Close()
         word.Quit()
     else:
-        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', os.path.dirname(pdf_path), doc_path], check=True)
+        subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf',
+                       '--outdir', os.path.dirname(pdf_path), doc_path], check=True)
+
 
 def main():
     st.title("PDF Document Generator")
-    
-    doc_type = st.selectbox("Select Document Type", ["Invoice India", "Invoice ROW", "NDA India", "NDA ROW", "Contract India", "Contract ROW"])
-    
+
+    doc_type = st.selectbox("Select Document Type", [
+                            "Invoice India", "Invoice ROW", "NDA India", "NDA ROW", "Contract India", "Contract ROW"])
+
     placeholders = {}
     invoice_number = int(st.session_state.get("invoice_number", 0)) + 1
     st.session_state["invoice_number"] = invoice_number
-    
+
     if "Invoice India" in doc_type:
         placeholders["<<Client Name>>"] = st.text_input("Client Name")
         placeholders["<<Company Name>>"] = st.text_input("Company Name")
@@ -55,7 +60,7 @@ def main():
         placeholders["<<Invoice Number>>"] = str(invoice_number)
         placeholders["<<Project Name>>"] = st.text_input("Project Name")
         placeholders["<<Phone Number>>"] = st.text_input("Phone Number")
-        
+
     elif "Invoice ROW" in doc_type:
         placeholders["<<Client Name>>"] = st.text_input("Client Name")
         placeholders["<<Company Name>>"] = st.text_input("Company Name")
@@ -70,25 +75,28 @@ def main():
     elif "NDA India" in doc_type:
         placeholders["<<Party A Name>>"] = st.text_input("Party A Name")
         placeholders["<<Party B Name>>"] = st.text_input("Party B Name")
-        placeholders["<<Agreement Date>>"] = datetime.now().strftime("%d-%m-%Y")
-    
+        placeholders["<<Agreement Date>>"] = datetime.now().strftime(
+            "%d-%m-%Y")
+
     elif "NDA ROW" in doc_type:
         placeholders["<<Party A Name>>"] = st.text_input("Party A Name")
         placeholders["<<Party B Name>>"] = st.text_input("Party B Name")
-        placeholders["<<Agreement Date>>"] = datetime.now().strftime("%d-%m-%Y")
-        
+        placeholders["<<Agreement Date>>"] = datetime.now().strftime(
+            "%d-%m-%Y")
+
     elif "Contract India" in doc_type:
         placeholders["<<Consultant Name>>"] = st.text_input("Consultant Name")
         placeholders["<<Company Name>>"] = st.text_input("Company Name")
         placeholders["<<Contract Date>>"] = datetime.now().strftime("%d-%m-%Y")
-    
+
     elif "Contract ROW" in doc_type:
         placeholders["<<Consultant Name>>"] = st.text_input("Consultant Name")
         placeholders["<<Company Name>>"] = st.text_input("Company Name")
         placeholders["<<Contract Date>>"] = datetime.now().strftime("%d-%m-%Y")
-    
-    signature = st.file_uploader("Upload Digital Signature (PNG, JPG)", type=["png", "jpg", "jpeg"])
-    
+
+    signature = st.file_uploader(
+        "Upload Digital Signature (PNG, JPG)", type=["png", "jpg", "jpeg"])
+
     template_files = {
         "Invoice India": "Invoice Template - INDIA.docx",
         "Invoice ROW": "Invoice Template - ROW.docx",
@@ -98,7 +106,6 @@ def main():
         "Contract ROW": "Contract Template - ROW 4.docx"
     }
 
-    
     template_path = template_files.get(doc_type)
     if st.button("Generate PDF"):
         if template_path and os.path.exists(template_path):
@@ -108,7 +115,7 @@ def main():
             pdf_output = word_output.replace(".docx", ".pdf")
             doc.save(word_output)
             convert_to_pdf(word_output, pdf_output)
-            
+
             with open(pdf_output, "rb") as pdf_file:
                 b64_pdf = base64.b64encode(pdf_file.read()).decode('utf-8')
                 href = f'<a href="data:application/pdf;base64,{b64_pdf}" download="{pdf_output}">Download PDF</a>'
@@ -116,6 +123,6 @@ def main():
         else:
             st.error("Template file not found!")
 
+
 if __name__ == "__main__":
     main()
-
